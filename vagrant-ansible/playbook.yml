@@ -1,0 +1,20 @@
+---
+# playbook for vagrant-ansible
+
+- name: "Deploy Apache httpd"
+  hosts: "all"
+
+  tasks:
+
+    - name: "Manage httpd Packages"
+      ansible.builtin.package:
+        name: "httpd"
+        state: "present"
+      become: true
+
+    - name: "Manage httpd Services"
+      ansible.builtin.service:
+        name: "httpd.service"
+        state: "started"
+        enabled: true
+      become: true

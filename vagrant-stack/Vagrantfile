@@ -1,0 +1,48 @@
+Vagrant.configure("2") do |config|
+
+  # libvirt
+  config.vm.provider "libvirt" do |lv|
+    lv.cpus = 2
+    lv.memory = 2048
+    # libvirt.qemu_use_session = false
+  end
+
+  # virtualbox
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 2
+    vb.memory = 2048
+    vb.linked_clone = true
+  end
+
+  # hyper-v
+  config.vm.provider "hyperv" do |hv|
+    hv.cpus = 2
+    hv.memory = "1024"
+    hv.maxmemory = "2048"
+    hv.linked_clone = true
+  end
+
+  config.vm.box = "fedora/34-cloud-base"
+
+  # Load Balancer
+  config.vm.define "lb" do |lb|
+    lb.vm.hostname = "lb"
+  end
+
+  # Database
+  config.vm.define "db" do |db|
+    db.vm.hostname = "db"
+  end
+
+  # Web Server
+  config.vm.define "web01" do |web01|
+    web01.vm.hostname = "web01"
+  end
+  config.vm.define "web02" do |web02|
+    web02.vm.hostname = "web02"
+  end
+  config.vm.define "web03" do |web03|
+    web03.vm.hostname = "web03"
+  end
+
+end
