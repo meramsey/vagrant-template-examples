@@ -1,8 +1,12 @@
 # Vagrant Templates
 
+A collection of vagrant templates for different purposes.
+
 ## Motivation
 
-TBD
+Having some common Vagrantfiles on hand as a guideline or to explain behavior
+is very useful. Also one can reference this repository for blog articles or
+show different features.
 
 ## Description
 
