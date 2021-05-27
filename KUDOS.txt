@@ -1,0 +1,37 @@
+---
+# reference: https://kudos-txt.io
+
+project:
+
+  - name: "while-true-do.io"
+    site: "https://while-true-do.io"
+    code: "https://code.while-true-do.io"
+    mail: "hello@while-true-do.io"
+    chat: "freenode #while-true-do"
+
+contributor:
+
+  - name: "Daniel Schier"
+    role: "Owner"
+    site: "https://while-true-do.io"
+    blog: "https://blog.while-true-do.io"
+    mail: "dschier@while-true-do.io"
+    chat: "freenode @daniel-wtd"
+    home: "Germany"
+
+partner:
+
+  - name: "KUDOS.txt"
+    site: "https://kudos-txt.io"
+    code: "https://https://code.while-true-do.io/kudos-txt"
+    mail: "hello@kudos-txt.io"
+
+  - name: "style-cheat"
+    site: "https://style-cheat.io"
+    code: "https://code.while-true-do.io/style-cheat"
+    mail: "hello@style-cheat.io"
+
+  - name: "gerri"
+    site: "https://gerri.io"
+    code: "https://code.while-true-do.io/gerri"
+    mail: "hello@gerri.io"
