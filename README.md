@@ -102,4 +102,4 @@ Except where otherwise noted, all work is [licensed](LICENSE) under a
 - Site <https://while-true-do.io>
 - Code <https://code.while-true-do.io/templates/vagrant-templates>
 - Mail [hello@style-cheat.io](mailto:hello@while-true-do.io)
-- Chat [@freenode #while-true-do](https://webchat.freenode.net/#while-true-do)
+- Chat [@libera.chat #whiletruedo](https://web.libera.chat/)

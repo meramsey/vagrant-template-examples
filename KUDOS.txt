@@ -7,7 +7,7 @@ project:
     site: "https://while-true-do.io"
     code: "https://code.while-true-do.io"
     mail: "hello@while-true-do.io"
-    chat: "freenode #while-true-do"
+    chat: "libera.chat #whiletruedo"
 
 contributor:
 
