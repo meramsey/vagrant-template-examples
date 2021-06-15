@@ -23,6 +23,8 @@ more about Vagrant and some examples listed here.
 - [Vagrant Shell (prepared) Provision](./vagrant-shell-script/)
 - [Vagrant Ansible Provision](./vagrant-ansible/)
 - [Vagrant Ansible (local) Provision](./vagrant-ansible-local)
+- [Vagrant Podman (run) Provision](./vagrant-podman)
+- [Vagrant Podman (build) Provision](./vagrant-podman-build)
 
 ## Requirements
 
