@@ -1,0 +1,349 @@
+---
+# playbook for vagrant-ansible-local-advanced
+- hosts: all
+  become: True
+  vars:
+    user_groups: []
+    user_name: "ubuntu"
+    user_shell: "/bin/bash"
+    user_generate_ssh_key: True
+    user_local_ssh_key_path: "~/.ssh/id_rsa.pub"
+    user_enable_passwordless_sudo: True
+    ansible_python_interpreter: "/usr/bin/python3"
+    deprecation_warnings: False
+    gitlfs_path: "/usr/bin/git-lfs"
+    glab_path: "/usr/bin/glab"
+    xonsh_path: "/usr/local/bin/xonsh"
+    starship_path: "/usr/local/bin/starship"
+    gh_path: "/usr/bin/gh"
+
+  tasks:
+    - name: "Create user"
+      user:
+        name: "{{ user_name }}"
+        groups: "{{ (user_groups | join(',')) }}"
+        generate_ssh_key: "{{ user_generate_ssh_key }}"
+        shell: "{{ user_shell }}"
+      register: created_user_registered # Reference: https://stackoverflow.com/a/48892377/1621381
+
+    - name: "Add ssh key authorized_key to allow SSH key based logins"
+      authorized_key:
+        user: "{{ user_name }}"
+        state: present
+        key: "{{ lookup('file', './id_rsa_dev.pub') }}"
+      no_log: True
+      ignore_errors: True
+
+    - name: "Enable including files from sudoers.d/"
+      lineinfile:
+        path: "/etc/sudoers"
+        regexp: "^#includedir /etc/sudoers.d"
+        line: "#includedir /etc/sudoers.d"
+        state: "present"
+        backup: True
+
+    - name: "Enable passwordless sudo"
+      copy:
+        content: "%{{ user_name }} ALL=(ALL) NOPASSWD:ALL"
+        dest: "/etc/sudoers.d/{{ user_name }}"
+        owner: "root"
+        group: "root"
+        mode: "0440"
+
+    - name: Update all packages to their latest version
+      block:
+        - name: Ansible Update Cache and Upgrade all Packages
+          register: updatesys
+          apt:
+            name: "*"
+            state: latest
+            update_cache: yes
+
+        - name: Display the last line of the previous task to check the stats
+          debug:
+            msg: "{{updatesys.stdout_lines|last}}"
+
+    # - name: Install Ansible repo # https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu
+    #   apt_repository:
+    #     repo: "ppa:ansible/ansible"
+    #     codename: "bionic"
+
+    # - name: Install Ansible
+    #   apt:
+    #     name: ansible
+    #     state: present
+
+    - name: Install git, curl and net-tools
+      apt:
+        state: present
+        name:
+          - apt-utils
+          - atop
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - debconf-utils
+          - dnsutils
+          - fonts-firacode
+          - fontconfig
+          - git
+          - gnupg
+          - gnupg2
+          - iproute2
+          - locales
+          - locales-all
+          - lsb-release
+          - net-tools
+          - openssh-server
+          - python3-venv
+          - php7.2-cli
+          - telnet
+          - unzip
+          - vim
+          - sudo
+          - sysstat
+          - software-properties-common
+          - wget
+          - debian-archive-keyring
+          - zsh
+
+    - name: Install git-lfs if missing
+      apt:
+        deb: https://packagecloud.io/github/git-lfs/packages/ubuntu/bionic/git-lfs_3.0.2_amd64.deb/download.deb
+      when: gitlfs_path is not exists
+
+    - name: Install gh (Github Cli) if missing
+      apt:
+        deb: https://github.com/cli/cli/releases/download/v2.5.1/gh_2.5.1_linux_amd64.deb
+      when: gh_path is not exists
+
+    - name: Install Xonsh Shell
+      get_url:
+        url: https://github.com/xonsh/xonsh/releases/latest/download/xonsh-x86_64.AppImage
+        dest: "{{ xonsh_path }}"
+        mode: "0755"
+      when: xonsh_path is not exists
+
+    - name: Download Starship installer
+      get_url:
+        url: https://starship.rs/install.sh
+        dest: /tmp/starship-installer.sh
+        mode: "u+rwx"
+      when: starship_path is not exists
+      register: starship_download
+
+    - name: Run the Starship installer script
+      shell: /tmp/starship-installer.sh --yes
+      when: starship_download.changed
+
+    - name: Remove the starship-installer.sh
+      file:
+        path: /tmp/starship-installer.sh
+        state: absent
+
+    - name: Download Glab installer
+      get_url:
+        url: https://raw.githubusercontent.com/profclems/glab/trunk/scripts/install.sh
+        dest: /tmp/glab-installer.sh
+        mode: "u+rwx"
+      when: glab_path is not exists
+      register: glab_download
+
+    - name: Run the Glab installer script
+      shell: /tmp/glab-installer.sh
+      when: glab_download.changed
+
+    - name: Remove the Glab installer script
+      file:
+        path: /tmp/glab-installer.sh
+        state: absent
+
+    - name: Remove useless packages from the cache
+      apt:
+        autoclean: yes
+
+    - name: Remove dependencies that are no longer required
+      apt:
+        autoremove: yes
+
+    - name: Setup User dotfiles and fonts
+      become: yes
+      become_flags: -i # Execute config files such as .profile (Ansible uses non-interactive login shells)
+      become_user: "{{ user_name }}"
+      block:
+        - name: Copy content of dotfiles directory to home directory recursively # Reference: https://stackoverflow.com/a/62247894/1621381
+          copy:
+            src: dotfiles/ # note the '/' <-- !!!
+            dest: "{{ created_user_registered.home }}"
+            force: yes
+            owner: "{{ user_name }}"
+            group: "{{ user_name }}"
+
+        - name: Ensure fonts directory
+          file:
+            path: "{{ created_user_registered.home }}/.fonts"
+            state: directory
+
+        - name: Check Font exists
+          shell: "ls {{ created_user_registered.home }}/.fonts/Fira*Code*Regular*Nerd*Font*Complete*Mono.ttf"
+          register: font_exists
+          ignore_errors: True
+
+        - name: Download Firacode Fonts
+          when: font_exists is failed
+          ansible.builtin.unarchive:
+            src: https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/FiraCode.zip
+            dest: "{{ created_user_registered.home }}/.fonts/"
+            remote_src: yes
+            force: yes
+            owner: "{{ user_name }}"
+            group: "{{ user_name }}"
+          register: font_reload
+
+        - name: Rebuild font cache
+          command: fc-cache -fv
+          when: font_reload.changed
+
+    - name: Setup Node
+      become: yes
+      become_flags: -i # Execute config files such as .profile (Ansible uses non-interactive login shells)
+      become_user: "{{ user_name }}"
+      block:
+        - name: Install nvm
+          ansible.builtin.shell: >
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.39.0/install.sh | bash
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.nvm/nvm.sh"
+
+        - name: Setup .profile
+          ansible.builtin.lineinfile:
+            path: ~/.profile
+            line: source ~/.nvm/nvm.sh # This will make sure Node is on the user's PATH
+            create: yes
+
+        - name: Install node
+          ansible.builtin.shell: |
+            source ~/.nvm/nvm.sh && nvm install {{item}}
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.nvm/versions/node/v{{item}}"
+          loop:
+            - 14.15.0
+            - 14.19.0
+            - 17.6.0
+
+    - name: Install pyenv build requirements
+      vars:
+        pyenv_build_requirements:
+          - make
+          - build-essential
+          - libssl-dev
+          - zlib1g-dev
+          - libbz2-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - llvm
+          - libncurses5-dev
+          - libncursesw5-dev
+          - xz-utils
+          - tk-dev
+          - libxml2-dev
+          - libxmlsec1-dev
+          - libffi-dev
+          - liblzma-dev
+          - python-openssl
+      package:
+        name: "{{ pyenv_build_requirements }}"
+        state: present
+        update_cache: true
+
+    - name: Setup Python and friends
+      become: yes
+      become_flags: -i # Execute config files such as .profile (Ansible uses non-interactive login shells)
+      become_user: "{{ user_name }}"
+      block:
+        - name: Install Pyenv
+          ansible.builtin.shell: >
+            curl https://pyenv.run | bash
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.pyenv/bin/pyenv"
+        - name: Check if ~/.pyenv directory already exists
+          stat:
+            path: "$HOME/.pyenv"
+          register: pyenv_root_st
+
+        - name: Existing ~/.pyenv install found
+          when: pyenv_root_st.stat.exists
+          block:
+            - name: Check if ~/.pyenv directory is a Git repository
+              stat:
+                path: "$HOME/.pyenv/.git"
+              register: pyenv_root_git_st
+
+        - name: Clone pyenv-virtualenv
+          git:
+            repo: https://github.com/pyenv/pyenv-virtualenv.git
+            dest: "$HOME/.pyenv/plugins/pyenv-virtualenv"
+            update: yes
+
+        - name: Clone pyenv-virtualenvwrapper
+          git:
+            repo: https://github.com/pyenv/pyenv-virtualenvwrapper.git
+            dest: "$HOME/.pyenv/plugins/pyenv-virtualenvwrapper"
+            update: yes
+
+        - name: Install Python interpreters # noqa 305
+          ansible.builtin.shell: >
+            CONFIGURE_OPTS=--enable-shared pyenv install {{ item }}
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.pyenv/versions/{{ item }}/bin/python"
+          loop:
+            - 3.6.8
+            - 3.9.6
+            - 3.10.2
+
+        - name: Set Pyenv global
+          ansible.builtin.shell: |
+            source ~/.bashrc && pyenv global 3.10.2 && pyenv rehash
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.pyenv/version"
+
+        - name: Install Poetry
+          ansible.builtin.shell: >
+            curl -sSL https://install.python-poetry.org | python3 -
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.poetry/bin/poetry"
+            warn: false
+
+        - name: Install PyProjectx
+          ansible.builtin.shell: >
+            curl -sSL https://raw.githubusercontent.com/houbie/pyprojectx/main/pw | python3 - --init global
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.pyprojectx/px"
+            warn: false
+
+    - name: Setup Rust
+      become: yes
+      become_flags: -i # Execute config files such as .profile (Ansible uses non-interactive login shells)
+      become_user: "{{ user_name }}"
+      block:
+        - name: Install Rust via rustup
+          ansible.builtin.shell: >
+            curl https://sh.rustup.rs -sSf | sh -s -- -y
+          args:
+            executable: /bin/bash
+            chdir: "$HOME"
+            creates: "$HOME/.cargo/bin/cargo"

@@ -1,0 +1,6 @@
+# .gitignore sample to keep empty directory https://stackoverflow.com/a/11579945/1621381
+# Ignore all files in this dir...
+*
+
+# ... except for this one.
+!.gitignore

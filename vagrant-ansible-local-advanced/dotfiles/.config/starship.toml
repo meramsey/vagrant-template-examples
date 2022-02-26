@@ -1,0 +1,115 @@
+# https://starship.rs/config/#prompt
+add_newline = false # Disable the blank line at the start of the prompt
+scan_timeout = 30000   # Timeout for starship to scan files (in milliseconds).
+
+# Use custom format
+# with multiline basic string
+format = """
+$username\
+$hostname\
+$localip\
+$shell\
+$directory\
+$git_branch\
+$git_state\
+$git_status\
+$status\
+$cmd_duration\
+$memory_usage\
+$jobs\
+$battery\
+$time
+$line_break\
+$character"""
+
+# # Disable the package module, hiding it from the prompt completely
+[package]
+disabled = true
+
+# https://starship.rs/config/#line-break
+[line_break]
+disabled = false
+
+# https://starship.rs/config/#username
+[username]
+style_user = "blue bold"
+style_root = "black bold"
+format = "[$user]($style)"
+disabled = false
+show_always = false
+
+# https://starship.rs/config/#hostname
+[hostname]
+ssh_only = true
+format =  "[[@](bold black)$hostname]($style) "
+style = "purple"
+trim_at = "."
+disabled = false
+
+# https://starship.rs/config/#directory
+[directory]
+truncate_to_repo = false
+use_logical_path = true
+
+# https://starship.rs/config/#status
+[status]
+style = "bg:red"
+symbol = "✖"
+format = '[\[$symbol $common_meaning$signal_name$maybe_int\]]($style) '
+map_symbol = true
+disabled = false
+
+# https://starship.rs/config/#git-status
+[git_status]
+# format             = '([$all_status$ahead_behind]($style)[](fg:236))'
+style              = "bold white bg:236"
+conflicted         = " 🏳$count"
+ahead              = " ⇡$count"
+behind             = " ⇣$count"
+diverged           = " [$ahead_count](green)⇕[$behind_count](red bg:236)"
+untracked          = " [$count🤷](purple bg:236)"
+stashed            = " [$count⚑](green bg:236)"
+modified           = " [$count📝](yellow bg:236)"
+staged             = " [$count●](green bg:236)"
+renamed            = " [$count👅](yellow bg:236)"
+deleted            = " [$count🗑](red bg:236)"
+disabled           = false
+
+# https://starship.rs/config/#command-duration
+[cmd_duration]
+format            	= " took [$duration ]($style) "
+min_time          	= 2_000
+style             	= "bold green"
+show_notifications	= true
+
+# https://starship.rs/config/#time
+[time]
+disabled = false
+#format = "at [$time 🕙] "
+#time_format = "%T"
+#format = '🕙[\[ $time \]]($style) '
+
+# https://starship.rs/config/#memory-usage
+[memory_usage]
+disabled = false
+threshold = 75
+symbol = " "
+format = "$symbol [${ram}]($style) "
+style = "bold dimmed green"
+
+# https://starship.rs/config/#python
+[python]
+symbol = " "
+format = '[${pyenv_prefix}(${symbol}${version} )(\($virtualenv\))]($style) '
+# Display the version of python from inside a local venv.
+#
+# Note this will only work when the venv is inside the project and it will only
+# work in the directory that contains the venv dir but maybe this is ok?
+python_binary = ["./venv/bin/python", "python", "python3", "python2"]
+style = "bold dimmed green"
+
+# https://starship.rs/config/#shlvl
+[shlvl]
+disabled = false
+symbol = "↕️ "
+threshold = 3

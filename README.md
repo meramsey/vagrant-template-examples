@@ -99,9 +99,21 @@ TBD
 Except where otherwise noted, all work is [licensed](LICENSE) under a
 [BSD-3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
 
-## Contact
+## Vagrant Box Cleanup
 
-- Site <https://while-true-do.io>
-- Code <https://code.while-true-do.io/templates/vagrant-templates>
-- Mail [hello@style-cheat.io](mailto:hello@while-true-do.io)
-- Chat [@libera.chat #whiletruedo](https://web.libera.chat/)
+Over time you will find having many box versions that consume many gigabytes of disk space. To remove the old boxes, run the following commands:
+
+- `vagrant box list`
+- `vagrant box remove <machine> --box-version <version>`
+
+These files are located in your home folder at `~/.vagrant.d/boxes/`
+
+## Vagrant Package Cleanup
+
+Additionally, Vagrant may leave behind gigabytes worth of temporary package files in your home folder at `~/.vagrant.d/tmp/` the folders that start with `vagrant-package` are safe to clean up providing that you're not in the middle of a `vagrant package`. Here is a sample directory that could be deleted:
+
+`~/.vagrant.d/tmp/vagrant-package-20170110-63252-fyv8wu`
+
+Here is an example command to delete all of the temporary package files:
+
+`rm -rf ~/.vagrant.d/tmp/vagrant-package-*`

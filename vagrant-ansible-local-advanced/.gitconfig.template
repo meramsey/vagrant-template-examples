@@ -1,0 +1,16 @@
+[credential "https://gitlab.com"]
+	helper = 
+	helper = !/usr/bin/glab auth git-credential
+[credential]
+	helper = store
+[user]
+	name = FIRSTNAME LASTNAME
+	email = YOUR_USERNAME@somedomain.tld
+[core]
+	whitespace   = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+	excludesfile = /home/ubuntu/.gitignore_global
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f

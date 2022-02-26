@@ -1,0 +1,21 @@
+.vscode/*
+.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+# exclude .vagrant stuff from being committed
+.vagrant/*
+ubuntu-bionic-18.04-cloudimg-console.log
+
+# excluding non templated config files with possible secrets/sensitive information
+.git-credentials
+.gitconfig
+.vagrant_size.json
+id_rsa_dev
+id_rsa_dev.pub
+**gh_hosts.yml
