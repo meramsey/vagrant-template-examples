@@ -38,12 +38,12 @@ to have Ansible installed.
 ### Clone the repository
 
 ```
-git clone https://code.while-true-do.io/templates/vagrant-templates.git
+git clone https://github.com/meramsey/vagrant-template-examples.git
 ```
 
 ### Download the latest release
 
-Please check [here](https://code.while-true-do.io/templates/vagrant-templates/releases)
+Please check [here](https://github.com/meramsey/vagrant-template-examples/releases)
 
 ## Usage
 
